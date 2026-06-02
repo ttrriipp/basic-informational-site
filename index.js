@@ -1,33 +1,29 @@
-import http from "node:http";
-import fs from "node:fs";
+const express = require("express");
+const path = require("path");
+const app = express();
 
-const server = http.createServer();
-
-const page404 = fs.readFileSync("404.html", "utf-8", (err, data) => {
-  if (err) throw err;
-  return data;
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+app.get("/about", (req, res) => {
+  res.sendFile(path.join(__dirname, "about.html"));
+});
+app.get("/contact-me", (req, res) => {
+  res.sendFile(path.join(__dirname, "contact-me.html"));
 });
 
-server.on("request", (request, res) => {
-  let filePath = "";
-  if (request.url === "/") {
-    filePath = "./index.html";
-  } else {
-    filePath = `./${request.url}.html`;
+app.get("/404", function (req, res, next) {
+  next();
+});
+app.use(function (req, res, next) {
+  res.status(404);
+  res.sendFile(path.join(__dirname, "404.html"));
+});
+
+const PORT = 3000;
+app.listen(PORT, (error) => {
+  if (error) {
+    throw error;
   }
-
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.writeHead(404, { "Content-Type": "text/html" });
-      res.end(page404);
-      return;
-    }
-
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(data);
-  });
-});
-
-server.listen(8000, () => {
   console.log(`server now running`);
 });
